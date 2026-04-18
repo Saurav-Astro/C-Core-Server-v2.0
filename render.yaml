@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: os-level-multithreaded-web-server
+    runtime: python
+    plan: free
+    buildCommand: bash render-build.sh
+    startCommand: cd server && python server.py
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: THREAD_COUNT
+        value: "6"

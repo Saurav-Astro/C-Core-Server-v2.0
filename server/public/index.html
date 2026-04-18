@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OS-Level Multi-Threaded Web Server</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-left"></div>
+  <div class="ambient ambient-right"></div>
+  <main class="shell">
+    <header class="hero">
+      <div class="badge">Python Socket Server</div>
+      <h1>OS-Level Multi-Threaded Web Server</h1>
+      <p>
+        A manual HTTP server built on raw sockets, a FIFO request queue, a fixed worker thread pool,
+        an in-memory cache, and a live monitoring API.
+      </p>
+      <div class="hero-links">
+        <a href="/api/stats">/api/stats</a>
+        <a href="/api/logs">/api/logs</a>
+        <a href="/api/threads">/api/threads</a>
+      </div>
+    </header>
+
+    <section class="cards" id="stats">
+      <article class="card stat">
+        <span class="label">Active Connections</span>
+        <strong id="active-connections">0</strong>
+      </article>
+      <article class="card stat">
+        <span class="label">Total Requests</span>
+        <strong id="total-requests">0</strong>
+      </article>
+      <article class="card stat">
+        <span class="label">Current RPS</span>
+        <strong id="current-rps">0</strong>
+      </article>
+      <article class="card stat">
+        <span class="label">Queue Size</span>
+        <strong id="queue-size">0</strong>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card panel">
+        <div class="panel-title">
+          <h2>Recent Logs</h2>
+          <span id="log-status" class="pill">waiting</span>
+        </div>
+        <div id="log-list" class="log-list"></div>
+      </article>
+
+      <article class="card panel">
+        <div class="panel-title">
+          <h2>Thread Pool</h2>
+          <span id="thread-summary" class="pill">idle</span>
+        </div>
+        <div id="thread-list" class="thread-list"></div>
+      </article>
+    </section>
+
+    <section class="card note">
+      <h2>Implementation Notes</h2>
+      <p>
+        The backend manually parses HTTP, schedules sockets through a request queue, protects shared
+        state with locks, and exposes metrics for the React dashboard.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const formatNumber = (value) => new Intl.NumberFormat().format(value ?? 0);
+
+    function renderStats(stats) {
+      const connections = stats?.connections ?? {};
+      const performance = stats?.performance ?? {};
+      const cache = stats?.cache ?? {};
+
+      $("active-connections").textContent = formatNumber(connections.active);
+      $("total-requests").textContent = formatNumber(connections.total_requests);
+      $("current-rps").textContent = formatNumber(performance.current_rps);
+      $("queue-size").textContent = formatNumber(connections.queued);
+      $("log-status").textContent = `${formatNumber(cache.hits)} hits / ${formatNumber(cache.misses)} misses`;
+    }
+
+    function renderLogs(logs) {
+      const list = $("log-list");
+      list.innerHTML = "";
+      if (!logs?.length) {
+        list.innerHTML = '<div class="empty">No requests yet.</div>';
+        return;
+      }
+      logs.slice(0, 8).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "log-row";
+        row.innerHTML = `
+          <div>
+            <strong>${item.method}</strong> <span>${item.path}</span>
+            <div class="muted">${item.ip} · ${item.timestamp}</div>
+          </div>
+          <div class="status status-${String(item.status).slice(0, 1)}">${item.status}</div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderThreads(threads) {
+      const list = $("thread-list");
+      list.innerHTML = "";
+      const workers = threads?.workers ?? [];
+      $("thread-summary").textContent = `${threads?.busy_workers ?? 0} busy / ${threads?.worker_count ?? workers.length ?? 0} total`;
+      if (!workers.length) {
+        list.innerHTML = '<div class="empty">No thread data available.</div>';
+        return;
+      }
+      workers.forEach((worker) => {
+        const row = document.createElement("div");
+        row.className = "thread-row";
+        row.innerHTML = `
+          <div>
+            <strong>${worker.name}</strong>
+            <div class="muted">${worker.current_path}</div>
+          </div>
+          <div class="status status-${worker.status}">${worker.status}</div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    async function refresh() {
+      try {
+        const [statsResponse, logsResponse, threadsResponse] = await Promise.all([
+          fetch("/api/stats", { cache: "no-store" }),
+          fetch("/api/logs?limit=12", { cache: "no-store" }),
+          fetch("/api/threads", { cache: "no-store" }),
+        ]);
+        const [stats, logs, threads] = await Promise.all([
+          statsResponse.json(),
+          logsResponse.json(),
+          threadsResponse.json(),
+        ]);
+        renderStats(stats);
+        renderLogs(logs.logs ?? []);
+        renderThreads(threads);
+      } catch (error) {
+        $("log-status").textContent = "offline";
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

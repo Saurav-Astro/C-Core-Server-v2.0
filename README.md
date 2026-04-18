@@ -87,6 +87,7 @@ This repository is ready for a single Render web service deployment.
 - The build script installs the React client, builds it, and copies the output into `server/public`
 - The Python server automatically binds to Render's `PORT` and uses `0.0.0.0` in Render mode
 - The React client uses same-origin requests in production, so no separate frontend service is needed
+- The Blueprint pins `PYTHON_VERSION` to `3.14.3` and sets `THREAD_COUNT` to `6`
 
 ## Sample Test Cases
 

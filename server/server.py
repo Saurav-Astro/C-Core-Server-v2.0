@@ -30,7 +30,6 @@ def main() -> None:
         except ValueError:
             return None
 
-    render_mode = os.getenv("RENDER", "").lower() == "true"
     env_host = os.getenv("HOST")
     env_port = _optional_int(os.getenv("PORT"))
     env_threads = _optional_int(os.getenv("THREAD_COUNT"))
@@ -43,7 +42,7 @@ def main() -> None:
         thread_count = env_threads
 
     overrides = {
-        "host": args.host or env_host or ("0.0.0.0" if render_mode else None),
+        "host": args.host or env_host or ("0.0.0.0" if env_port is not None else None),
         "port": args.port if args.port is not None else env_port,
         "thread_count": thread_count,
         "static_dir": args.static_dir,

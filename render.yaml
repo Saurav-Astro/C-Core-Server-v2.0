@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: bash render-build.sh
-    startCommand: cd server && python server.py
+    startCommand: cd backend && python server.py
     healthCheckPath: /healthz
     autoDeployTrigger: commit
     envVars:

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLIENT_DIR="$ROOT_DIR/client"
-SERVER_PUBLIC_DIR="$ROOT_DIR/server/public"
+FRONTEND_DIR="$ROOT_DIR/frontend"
+SERVER_PUBLIC_DIR="$ROOT_DIR/backend/public"
 
-cd "$CLIENT_DIR"
+cd "$FRONTEND_DIR"
 npm ci
 npm run build
 

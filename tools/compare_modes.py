@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVER_SCRIPT = ROOT / "server" / "server.py"
+SERVER_SCRIPT = ROOT / "backend" / "server.py"
 LOAD_TEST_SCRIPT = ROOT / "tools" / "load_test.py"
 
 

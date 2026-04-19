@@ -7,8 +7,8 @@ Repository: `C-Core-Server-v2.0`
 ## Project Layout
 
 ```text
-server/   Python backend, manual HTTP parsing, thread pool, cache, logging
-client/   React + Tailwind dashboard
+backend/  Python backend, manual HTTP parsing, thread pool, cache, logging
+frontend/ React + Tailwind dashboard
 logs/     Runtime request logs
 tools/    Load testing and performance comparison scripts
 ```
@@ -31,7 +31,7 @@ tools/    Load testing and performance comparison scripts
 ## Run the Backend
 
 ```bash
-cd server
+cd backend
 python server.py
 ```
 
@@ -50,7 +50,7 @@ python server.py --mode single
 ## Run the Frontend
 
 ```bash
-cd client
+cd frontend
 npm install
 npm run dev
 ```
@@ -82,11 +82,11 @@ This repository is ready for a single Render web service deployment.
 
 - Blueprint file: [`render.yaml`](./render.yaml)
 - Build command: `bash render-build.sh`
-- Start command: `cd server && python server.py`
+- Start command: `cd backend && python server.py`
 - Health check path: `/healthz`
-- The build script installs the React client, builds it, and copies the output into `server/public`
+- The build script installs the React frontend, builds it, and copies the output into `backend/public`
 - The Python server automatically binds to Render's `PORT` and uses `0.0.0.0` in Render mode
-- The React client uses same-origin requests in production, so no separate frontend service is needed
+- The React frontend uses same-origin requests in production, so no separate frontend service is needed
 - The Blueprint pins `PYTHON_VERSION` to `3.14.3` and sets `THREAD_COUNT` to `6`
 
 ## Sample Test Cases
@@ -128,5 +128,5 @@ By default the comparator uses a small blocking benchmark route:
 ## Notes
 
 - The backend is intentionally low-level and educational.
-- The React client polls the backend instead of using a framework shortcut.
+- The React frontend polls the backend instead of using a framework shortcut.
 - The server uses standard library modules only.

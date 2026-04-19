@@ -1,5 +1,5 @@
 {
-  "name": "os-level-multithreaded-web-server-dashboard",
+  "name": "os-level-multithreaded-web-server-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
